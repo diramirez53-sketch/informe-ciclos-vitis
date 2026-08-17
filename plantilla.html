@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ciclos de Cosecha · Vitis Olei 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F1F4EF; --ink:#15211A; --muted:#5D6B62; --line:#D9E0D6; --card:#FFFFFF;
+  --green:#3B6D11; --green-l:#5A9E2F; --orange:#E8611A; --deep:#7A2410;
+  --c-fresh:#8FC04A; --c-cycle:#3B6D11; --c-v1:#E9A712; --c-v2:#E8611A; --c-v3:#B8341A; --c-v4:#7A1F10; --c-nd:#A9B2A9;
+  --r:8px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:15px; line-height:1.45; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px 64px}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:'Bricolage Grotesque','Inter',sans-serif;font-weight:800;letter-spacing:-.02em;margin:0}
+
+/* ---------- header ---------- */
+header{background:var(--ink);color:#EAF0E6;padding:22px 0 0;border-bottom:3px solid var(--green-l)}
+.hd{max-width:1240px;margin:0 auto;padding:0 16px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--c-fresh)}
+header h1{font-size:clamp(24px,4.5vw,38px);color:#fff;margin:4px 0 2px;line-height:1.05}
+.sub{color:#9DB09C;font-size:13px;margin-bottom:18px}
+
+/* ---------- date control ---------- */
+.datebar{background:#1E2C24;border-radius:var(--r) var(--r) 0 0;padding:14px 16px;margin-bottom:0}
+.dbrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dblabel{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8FA48D;width:100%}
+#bigDate{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(19px,3.6vw,26px);color:#fff;min-width:170px}
+#bigDate small{display:block;font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:11px;color:#8FA48D;letter-spacing:.08em}
+.nav{background:#2E4034;border:1px solid #3F5745;color:#DCE8D8;width:38px;height:38px;border-radius:6px;font-size:16px;cursor:pointer;flex:none}
+.nav:hover:not(:disabled){background:var(--green);border-color:var(--green-l)}
+.nav:disabled{opacity:.3;cursor:not-allowed}
+.chip{background:transparent;border:1px solid #3F5745;color:#B9C9B4;padding:8px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:.04em}
+.chip:hover{border-color:var(--c-fresh);color:#fff}
+.chip.on{background:var(--green-l);border-color:var(--green-l);color:#fff}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;cursor:pointer;margin-top:6px}
+input[type=range]::-webkit-slider-runnable-track{height:6px;background:#3A4E3F;border-radius:3px}
+input[type=range]::-moz-range-track{height:6px;background:#3A4E3F;border-radius:3px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--c-fresh);border:3px solid #15211A;margin-top:-8px}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--c-fresh);border:3px solid #15211A}
+input[type=range]:focus-visible{outline:2px solid var(--c-fresh);outline-offset:3px}
+.ticks{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7C8F7B;margin-top:-2px}
+
+/* ---------- kpi ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin:16px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 15px;border-top:4px solid var(--c-cycle);position:relative}
+.kpi .k-lab{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.kpi .k-val{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;line-height:1.1;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .k-un{font-size:13px;font-weight:600;color:var(--muted);margin-left:3px}
+.kpi .k-sub{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:3px}
+.kpi.fresh{border-top-color:var(--c-fresh)} .kpi.cyc{border-top-color:var(--c-cycle)}
+.kpi.out{border-top-color:var(--c-v2)} .kpi.max{border-top-color:var(--deep)} .kpi.avg{border-top-color:var(--muted)}
+
+.panel.feature{border:1px solid var(--line);border-top:4px solid var(--green);padding:20px 20px 20px}
+.feat-h{font-size:19px}
+.feat-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.feat-stats .fs{background:#F5F8F3;border-radius:6px;padding:9px 11px}
+.feat-stats .fs-lab{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.feat-stats .fs-val{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;margin-top:2px}
+.feat-stats .fs-val span{font-size:12px;font-weight:600;color:var(--muted);margin-left:2px}
+
+/* ---------- panels ---------- */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 18px;margin-bottom:14px}
+.ph{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.ph h2{font-size:15px;letter-spacing:.01em}
+.ph .note{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+
+/* stacked bar */
+.stack{display:flex;height:34px;border-radius:5px;overflow:hidden;border:1px solid var(--line)}
+.stack div{transition:flex-grow .35s ease;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;min-width:0;overflow:hidden}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px}
+.legend span.dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px}
+.legend .lg{color:var(--muted)} .legend .lg b{color:var(--ink);font-family:'IBM Plex Mono',monospace}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;border-bottom:1.5px solid var(--ink);position:sticky;top:0;background:var(--card);z-index:2}
+th:first-child,td:first-child{text-align:left}
+td.num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+tbody tr:hover{background:#F5F8F3}
+tfoot td{font-weight:700;border-top:1.5px solid var(--ink);border-bottom:none;background:#F5F8F3}
+.scroll{overflow:auto;max-height:460px;border:1px solid var(--line);border-radius:6px}
+.scroll table th{background:#FBFCFA}
+.pill{display:inline-block;padding:2px 7px;border-radius:11px;font-size:11px;font-weight:600;color:#fff;font-family:'IBM Plex Mono',monospace}
+
+/* ---------- signature: cycle rhythm strip ---------- */
+.strip-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:#FBFCFA}
+.strip{border-collapse:collapse;font-family:'IBM Plex Mono',monospace}
+.strip td.lot{position:sticky;left:0;background:#FBFCFA;font-size:10.5px;padding:0 8px 0 6px;text-align:left;white-space:nowrap;border-right:1px solid var(--line);z-index:1;height:13px;line-height:13px}
+.strip td.c{width:13px;height:13px;padding:0;border:none}
+.strip td.c.sel{outline:2px solid var(--ink);outline-offset:-2px;position:relative;z-index:1}
+.strip td.cut{position:relative}
+.strip td.cut::after{content:'';position:absolute;inset:3px;background:#fff;border-radius:50%;opacity:.9}
+.strip th.d{font-size:9px;font-weight:400;color:var(--muted);padding:0;height:26px;vertical-align:bottom;writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;border:none;position:static;background:transparent;letter-spacing:0;text-transform:none}
+.strip th.sel{color:var(--ink);font-weight:600}
+.strip th.corner{position:sticky;left:0;background:#FBFCFA;border:none;z-index:3}
+.scale{display:flex;align-items:center;gap:4px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);margin-top:9px;flex-wrap:wrap}
+.scale i{width:15px;height:11px;display:inline-block;border-radius:2px}
+
+/* chart */
+svg{display:block;width:100%;height:auto}
+.axis{font-family:'IBM Plex Mono',monospace;font-size:10px;fill:var(--muted)}
+.gl{stroke:var(--line);stroke-width:1}
+
+/* filters */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+select,input[type=search]{font-family:'Inter',sans-serif;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+input[type=search]{min-width:150px}
+.btn{background:var(--green);color:#fff;border:none;padding:8px 13px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.btn:hover{background:var(--green-l)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+footer{color:var(--muted);font-size:11.5px;font-family:'IBM Plex Mono',monospace;text-align:center;padding-top:18px;border-top:1px solid var(--line);margin-top:20px;line-height:1.7}
+.sortable{cursor:pointer;user-select:none}
+.sortable:hover{color:var(--ink)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd">
+    <div class="eyebrow">Vitis Olei · Zona Oriental</div>
+    <h1>Seguimiento de Ciclos de Cosecha</h1>
+    <div class="sub">125 lotes · 2.803,8 has totales · ciclo objetivo <b id="objDias">12</b> días · ventana recién cortado <b id="objVent">5</b> días</div>
+    <div class="datebar">
+      <div class="dblabel">Fecha del informe — mueva el control para ver cualquier día</div>
+      <div class="dbrow">
+        <button class="nav" id="prev" title="Día anterior">◀</button>
+        <div id="bigDate">—<small>—</small></div>
+        <button class="nav" id="next" title="Día siguiente">▶</button>
+        <button class="chip" id="toToday">Ir a hoy</button>
+        <button class="chip" id="play">▶ Animar</button>
+      </div>
+      <input type="range" id="slider" min="0" max="45" value="45" step="1">
+      <div class="ticks"><span id="tk0">—</span><span id="tk1">—</span><span id="tk2">—</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="kpis">
+    <div class="kpi fresh"><div class="k-lab">Recién cortado &lt;5 d</div><div class="k-val" id="kFresh">—<span class="k-un">has</span></div><div class="k-sub" id="kFreshS">—</div></div>
+    <div class="kpi cyc"><div class="k-lab">En ciclo 5–12 d</div><div class="k-val" id="kCyc">—<span class="k-un">has</span></div><div class="k-sub" id="kCycS">—</div></div>
+    <div class="kpi out"><div class="k-lab">Fuera de ciclo &gt;12 d</div><div class="k-val" id="kOut">—<span class="k-un">has</span></div><div class="k-sub" id="kOutS">—</div></div>
+    <div class="kpi avg"><div class="k-lab">Ciclo ponderado</div><div class="k-val" id="kAvg">—<span class="k-un">d</span></div><div class="k-sub" id="kAvgS">—</div></div>
+    <div class="kpi max"><div class="k-lab">Mayor ciclo</div><div class="k-val" id="kMax">—<span class="k-un">d</span></div><div class="k-sub" id="kMaxS">—</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><h2>Distribución de hectáreas por estado de ciclo</h2><span class="note" id="distNote">—</span></div>
+    <div class="stack" id="stack"></div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div class="panel feature">
+    <div class="ph"><h2 class="feat-h">Evolución del ciclo ponderado</h2><span class="note">promedio de días de ciclo, ponderado por hectáreas · 01-jul → 15-ago-2026</span></div>
+    <div id="pondChart"></div>
+    <div class="feat-stats" id="featStats"></div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><h2 id="aggTitle">Informe por zona</h2>
+      <span><button class="chip on" id="byZona" style="border-color:var(--line);color:var(--ink)">Zona</button>
+      <button class="chip" id="byFinca" style="border-color:var(--line);color:var(--muted)">Finca</button></span></div>
+    <div class="scroll" style="max-height:330px"><table id="aggTable"></table></div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><h2>Ritmo de cosecha por lote</h2><span class="note">cada columna es un día · el punto blanco marca el corte · columna resaltada = fecha seleccionada</span></div>
+    <div class="strip-wrap"><table class="strip" id="strip"></table></div>
+    <div class="scale"><span>Día de ciclo:</span><i style="background:#8FC04A"></i>0–4<i style="background:#3B6D11"></i>5–12<i style="background:#E9A712"></i>13–17<i style="background:#E8611A"></i>18–22<i style="background:#B8341A"></i>23–27<i style="background:#7A1F10"></i>28+</div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><h2>Detalle por lote</h2><span class="note" id="detNote">—</span></div>
+    <div class="filters">
+      <select id="fZona"></select>
+      <select id="fFinca"></select>
+      <select id="fEstado"></select>
+      <input type="search" id="fSearch" placeholder="Buscar lote o material…">
+      <button class="btn ghost" id="clearF">Limpiar</button>
+      <button class="btn" id="csv">Descargar CSV</button>
+    </div>
+    <div class="scroll"><table id="lotTable"></table></div>
+  </div>
+
+  <footer>
+    Fuente: <b>2026_Seguimiento_Ciclos_de_Cosecha.xlsx</b> — hoja «Registro Diario» · Serie del 01-jul-2026 al 15-ago-2026<br>
+    El día de ciclo es el conteo de días desde el último corte; un corte se identifica cuando el conteo regresa a 0.<br>
+    Bandas: En ciclo ≤12 d · Vencido 1-5 d = 13–17 · Vencido 6-10 d = 18–22 · Vencido 11-15 d = 23–27 · Vencido +15 d ≥28.
+  </footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/;
+const {dates, matrix} = DATA;
+const lots = DATA.L.map(r=>{const o={};DATA.K.forEach((k,i)=>{const t=DATA.T[k];o[k]=t?(r[i]<0?null:t[r[i]]):r[i];});return o;});
+const OBJ = DATA.cicloObjetivo, VENT = DATA.ventana;
+const N = dates.length, TODAY = dates.length - 1;
+let idx = TODAY, aggMode = 'zona', sortKey = 'ciclo', sortDir = -1, timer = null;
+
+const BANDS = [
+  {k:'En ciclo',      c:'#3B6D11', lo:0,  hi:OBJ},
+  {k:'Vencido 1-5 d', c:'#E9A712', lo:13, hi:17},
+  {k:'Vencido 6-10 d',c:'#E8611A', lo:18, hi:22},
+  {k:'Vencido 11-15 d',c:'#B8341A',lo:23, hi:27},
+  {k:'Vencido +15 d', c:'#7A1F10', lo:28, hi:9e9}
+];
+const band = v => v==null ? null : v<=OBJ ? BANDS[0] : v<=17 ? BANDS[1] : v<=22 ? BANDS[2] : v<=27 ? BANDS[3] : BANDS[4];
+const cellColor = v => v==null ? '#E4E8E2' : v<VENT ? '#8FC04A' : band(v).c;
+const cond = v => v==null ? 'Sin dato' : v<VENT ? 'Recién cortado' : v<=OBJ ? 'En ciclo' : 'Fuera de ciclo';
+const CONDC = {'Recién cortado':'#8FC04A','En ciclo':'#3B6D11','Fuera de ciclo':'#E8611A','Sin dato':'#A9B2A9'};
+
+const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const DIA = ['dom','lun','mar','mié','jue','vie','sáb'];
+const D = s => new Date(s+'T12:00:00');
+const fShort = s => { const d=D(s); return d.getDate()+'-'+MES[d.getMonth()]; };
+const fLong  = s => { const d=D(s); return DIA[d.getDay()]+' '+d.getDate()+' '+MES[d.getMonth()]+' '+d.getFullYear(); };
+const n1 = x => x.toLocaleString('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1});
+const n0 = x => x.toLocaleString('es-CO',{maximumFractionDigits:0});
+
+/* ---------- state at a given day ---------- */
+function snapshot(i){
+  const rows = lots.map((lo,r)=>{
+    const v = matrix[r][i];
+    return {...lo, ciclo:v, banda:v==null?'Sin dato':band(v).k, cond:cond(v)};
+  });
+  return rows;
+}
+function totals(rows){
+  const t = {has:0, lotes:0, byBand:{}, byCond:{}, sumProd:0, maxV:-1, maxLot:'—'};
+  BANDS.forEach(b=>t.byBand[b.k]={has:0,lotes:0});
+  ['Recién cortado','En ciclo','Fuera de ciclo'].forEach(c=>t.byCond[c]={has:0,lotes:0});
+  rows.forEach(r=>{
+    if(r.ciclo==null) return;
+    t.has+=r.has; t.lotes++;
+    t.byBand[r.banda].has+=r.has; t.byBand[r.banda].lotes++;
+    t.byCond[r.cond].has+=r.has; t.byCond[r.cond].lotes++;
+    t.sumProd += r.ciclo*r.has;
+    if(r.ciclo>t.maxV){t.maxV=r.ciclo;t.maxLot=r.lote;}
+  });
+  t.pond = t.has? t.sumProd/t.has : 0;
+  return t;
+}
+/* daily cuts across whole series */
+const daily = dates.map((d,j)=>{
+  let has=0, lotes=0;
+  matrix.forEach((row,r)=>{ if(row[j]===0){has+=lots[r].has; lotes++;} });
+  return {date:d, has:Math.round(has*100)/100, lotes};
+});
+let acc=0; daily.forEach(x=>{acc+=x.has; x.acum=Math.round(acc*100)/100;});
+const TOTAL_HAS = lots.reduce((s,l)=>s+l.has,0);
+const HAS_CICLO = lots.reduce((s,l,r)=>s+(matrix[r][TODAY]!=null?l.has:0),0);
+
+/* weighted-average cycle (ciclo ponderado) per day across all lots with data that day */
+const pondSeries = dates.map((d,j)=>{
+  let sp=0, sh=0;
+  matrix.forEach((row,r)=>{ const val=row[j]; if(val!=null){ sp+=val*lots[r].has; sh+=lots[r].has; } });
+  return sh ? sp/sh : null;
+});
+
+/* ---------- render ---------- */
+function render(){
+  const day = dates[idx], rows = snapshot(idx), t = totals(rows);
+
+  document.getElementById('bigDate').innerHTML = fLong(day).replace(/^(\w+) /,'<span style="color:#8FA48D">$1</span> ')
+    + '<small>' + (idx===TODAY?'HOY · CIERRE DE SERIE':'DÍA '+(idx+1)+' DE '+N) + '</small>';
+  document.getElementById('slider').value = idx;
+  document.getElementById('prev').disabled = idx===0;
+  document.getElementById('next').disabled = idx===N-1;
+
+  const f=t.byCond['Recién cortado'], c=t.byCond['En ciclo'], o=t.byCond['Fuera de ciclo'];
+  set('kFresh', n1(f.has)); set('kFreshS', f.lotes+' lotes · '+n1(f.has/t.has*100)+'%');
+  set('kCyc',   n1(c.has)); set('kCycS',   c.lotes+' lotes · '+n1(c.has/t.has*100)+'%');
+  set('kOut',   n1(o.has)); set('kOutS',   o.lotes+' lotes · '+n1(o.has/t.has*100)+'%');
+  set('kAvg',   n1(t.pond)); document.getElementById('kAvgS').textContent = 'objetivo '+OBJ+' d · '+(t.pond>OBJ?'+':'')+n1(t.pond-OBJ)+' d';
+  set('kMax',   t.maxV<0?'—':t.maxV); document.getElementById('kMaxS').textContent = t.maxLot;
+
+  // stacked bar
+  const st = document.getElementById('stack'); st.innerHTML='';
+  const lg = document.getElementById('legend'); lg.innerHTML='';
+  BANDS.forEach(b=>{
+    const v=t.byBand[b.k]; if(v.has<=0) return;
+    const d=document.createElement('div'); d.style.background=b.c; d.style.flexGrow=v.has;
+    const pct=v.has/t.has*100; d.textContent = pct>7? n1(pct)+'%' : '';
+    d.title = b.k+': '+n1(v.has)+' has · '+v.lotes+' lotes'; st.appendChild(d);
+  });
+  BANDS.forEach(b=>{ const v=t.byBand[b.k];
+    lg.insertAdjacentHTML('beforeend',
+     `<span class="lg"><span class="dot" style="background:${b.c}"></span>${b.k} <b>${n1(v.has)}</b> has · <b>${v.lotes}</b> lt</span>`);
+  });
+  document.getElementById('distNote').textContent = n1(t.has)+' has con seguimiento · '+t.lotes+' lotes';
+
+  drawPondChart();
+  drawAgg(rows);
+  drawStrip();
+  drawLots(rows);
+}
+const set=(id,v)=>{const e=document.getElementById(id); e.childNodes[0].nodeValue=v;};
+
+/* ---------- aggregate table ---------- */
+function drawAgg(rows){
+  const key = aggMode==='zona' ? r=>'Zona '+r.zona : r=>r.finca;
+  const m = new Map();
+  rows.forEach(r=>{
+    if(r.ciclo==null) return;
+    const k=key(r);
+    if(!m.has(k)) m.set(k,{k, has:0, lotes:0, b:{}, maxV:-1, maxLot:'', sp:0});
+    const o=m.get(k); o.has+=r.has; o.lotes++; o.sp+=r.ciclo*r.has;
+    o.b[r.banda]=(o.b[r.banda]||0)+r.has;
+    if(r.ciclo>o.maxV){o.maxV=r.ciclo;o.maxLot=r.lote;}
+  });
+  const arr=[...m.values()].sort((a,b)=>aggMode==='zona'?a.k.localeCompare(b.k,'es',{numeric:true}):b.has-a.has);
+  let h = `<thead><tr><th>${aggMode==='zona'?'Zona':'Finca'}</th><th>Has</th><th>Lt</th><th>En ciclo</th><th>Fuera</th><th>% fuera</th><th>Mayor</th></tr></thead><tbody>`;
+  let T={has:0,lotes:0,ec:0,fu:0,sp:0,maxV:-1,maxLot:''};
+  arr.forEach(o=>{
+    const ec=o.b['En ciclo']||0, fu=o.has-ec, p=fu/o.has*100;
+    T.has+=o.has;T.lotes+=o.lotes;T.ec+=ec;T.fu+=fu;T.sp+=o.sp;
+    if(o.maxV>T.maxV){T.maxV=o.maxV;T.maxLot=o.maxLot;}
+    h+=`<tr><td>${o.k}</td><td class="num">${n1(o.has)}</td><td class="num">${o.lotes}</td>
+        <td class="num">${n1(ec)}</td><td class="num" style="color:${fu>0?'#B8341A':'inherit'}">${n1(fu)}</td>
+        <td class="num">${n1(p)}%</td><td class="num" title="${o.maxLot}">${o.maxV} d</td></tr>`;
+  });
+  h+=`</tbody><tfoot><tr><td>Total</td><td class="num">${n1(T.has)}</td><td class="num">${T.lotes}</td>
+      <td class="num">${n1(T.ec)}</td><td class="num">${n1(T.fu)}</td><td class="num">${n1(T.fu/T.has*100)}%</td>
+      <td class="num" title="${T.maxLot}">${T.maxV} d</td></tr></tfoot>`;
+  document.getElementById('aggTable').innerHTML=h;
+  document.getElementById('aggTitle').textContent = aggMode==='zona'?'Informe por zona':'Informe por finca';
+}
+
+/* ---------- ciclo ponderado chart (destacado) ---------- */
+function drawPondChart(){
+  const W=1180,H=340,mL=48,mR=20,mT=18,mB=32;
+  const iw=W-mL-mR, ih=H-mT-mB;
+  const vals=pondSeries.filter(v=>v!=null);
+  const maxV=Math.max(...vals, OBJ)*1.18, minV=Math.min(0,Math.min(...vals));
+  const bw=iw/(N-1||1);
+  const y = v => mT+ih-(v-minV)/(maxV-minV)*ih;
+  let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Evolución del ciclo ponderado">`;
+  s+=`<defs><linearGradient id="pondFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#5A9E2F" stop-opacity=".28"/>
+        <stop offset="100%" stop-color="#5A9E2F" stop-opacity="0"/></linearGradient></defs>`;
+  for(let g=0;g<=5;g++){const yy=mT+ih-ih*g/5, val=minV+(maxV-minV)*g/5;
+    s+=`<line class="gl" x1="${mL}" y1="${yy}" x2="${W-mR}" y2="${yy}"/>`;
+    s+=`<text class="axis" x="${mL-7}" y="${yy+4}" text-anchor="end" font-size="11">${val.toFixed(0)}</text>`;}
+  // objective threshold line
+  const yo=y(OBJ);
+  s+=`<line x1="${mL}" y1="${yo}" x2="${W-mR}" y2="${yo}" stroke="#B8341A" stroke-width="1.4" stroke-dasharray="6 4"/>`;
+  s+=`<text class="axis" x="${W-mR}" y="${yo-6}" text-anchor="end" fill="#B8341A" font-size="11.5">objetivo ${OBJ} d</text>`;
+  let p='', area='', first=true, lastX=mL, lastY=mT+ih;
+  dates.forEach((d,j)=>{
+    if(pondSeries[j]==null) return;
+    const x=mL+j*bw, yy=y(pondSeries[j]);
+    p+=(first?'M':'L')+x.toFixed(1)+' '+yy.toFixed(1);
+    if(first) area='M'+x.toFixed(1)+' '+(mT+ih)+' L'+x.toFixed(1)+' '+yy.toFixed(1);
+    else area+=' L'+x.toFixed(1)+' '+yy.toFixed(1);
+    first=false; lastX=x; lastY=yy;
+  });
+  area+=' L'+lastX.toFixed(1)+' '+(mT+ih)+' Z';
+  s+=`<path d="${area}" fill="url(#pondFill)"/>`;
+  s+=`<path d="${p}" fill="none" stroke="#3B6D11" stroke-width="3"/>`;
+  dates.forEach((d,j)=>{
+    if(pondSeries[j]==null) return;
+    const x=mL+j*bw, yy=y(pondSeries[j]);
+    s+=`<circle cx="${x}" cy="${yy}" r="${j===idx?6:2.6}" fill="${j===idx?'#15211A':'#5A9E2F'}" stroke="#fff" stroke-width="${j===idx?2:0}"><title>${fShort(d)}: ${n1(pondSeries[j])} d</title></circle>`;
+  });
+  if(pondSeries[idx]!=null){
+    const xs=mL+idx*bw;
+    s+=`<line x1="${xs}" y1="${mT}" x2="${xs}" y2="${mT+ih}" stroke="#15211A" stroke-width="1" stroke-dasharray="3 3"/>`;
+    s+=`<circle cx="${xs}" cy="${y(pondSeries[idx])}" r="10" fill="none" stroke="#15211A" stroke-width="1.2" opacity=".35"/>`;
+  }
+  for(let j=0;j<N;j+=3) s+=`<text class="axis" x="${mL+j*bw}" y="${H-10}" text-anchor="middle" font-size="11">${fShort(dates[j])}</text>`;
+  s+='</svg>';
+  document.getElementById('pondChart').innerHTML=s;
+
+  const cur = pondSeries[idx];
+  const d0 = daily[idx];
+  const fs = document.getElementById('featStats');
+  fs.innerHTML = `
+    <div class="fs"><div class="fs-lab">Ciclo ponderado hoy</div><div class="fs-val">${cur==null?'—':n1(cur)}<span>d</span></div></div>
+    <div class="fs"><div class="fs-lab">vs. objetivo (${OBJ} d)</div><div class="fs-val" style="color:${cur!=null&&cur>OBJ?'#B8341A':'#3B6D11'}">${cur==null?'—':(cur>OBJ?'+':'')+n1(cur-OBJ)}<span>d</span></div></div>
+    <div class="fs"><div class="fs-lab">Has cortadas ese día</div><div class="fs-val">${n1(d0.has)}<span>has · ${d0.lotes} lt</span></div></div>
+    <div class="fs"><div class="fs-lab">Acumulado del período</div><div class="fs-val">${n1(d0.acum)}<span>has</span></div></div>
+    <div class="fs"><div class="fs-lab">Ciclos equivalentes</div><div class="fs-val">${n1(d0.acum/HAS_CICLO)}<span>ciclos</span></div></div>`;
+}
+
+/* ---------- rhythm strip ---------- */
+let stripBuilt=false;
+function drawStrip(){
+  const el=document.getElementById('strip');
+  if(!stripBuilt){
+    const order=lots.map((l,r)=>r).filter(r=>matrix[r][TODAY]!=null)
+      .sort((a,b)=> lots[a].zona-lots[b].zona || lots[a].finca.localeCompare(lots[b].finca,'es') || lots[a].lote.localeCompare(lots[b].lote,'es',{numeric:true}));
+    let h='<thead><tr><th class="corner"></th>';
+    dates.forEach((d,j)=>h+=`<th class="d" data-j="${j}">${fShort(d)}</th>`);
+    h+='</tr></thead><tbody>';
+    order.forEach(r=>{
+      h+=`<tr><td class="lot">${lots[r].lote}</td>`;
+      matrix[r].forEach((v,j)=>{
+        h+=`<td class="c${v===0?' cut':''}" data-j="${j}" style="background:${cellColor(v)}"><span style="display:none"></span><title></title></td>`;
+      });
+      h+='</tr>';
+    });
+    el.innerHTML=h+'</tbody>';
+    el.querySelectorAll('td.c').forEach(td=>td.title='');
+    stripBuilt=true;
+  }
+  el.querySelectorAll('.sel').forEach(e=>e.classList.remove('sel'));
+  el.querySelectorAll(`[data-j="${idx}"]`).forEach(e=>e.classList.add('sel'));
+}
+
+/* ---------- lot table ---------- */
+const COLS=[
+  ['lote','Lote',0],['zona','Zona',1],['finca','Finca',0],['has','Has',1],
+  ['ciclo','Ciclo (d)',1],['banda','Estado ciclo',0],['cond','Condición',0],
+  ['ultCorte','Últ. corte',0],['edad','Edad',1],['mat','Material',0],['palmas','Palmas',1]
+];
+function drawLots(rows){
+  const z=v('fZona'), fi=v('fFinca'), es=v('fEstado'), q=v('fSearch').toLowerCase().trim();
+  let f=rows.filter(r=>
+    (!z||String(r.zona)===z)&&(!fi||r.finca===fi)&&(!es||r.banda===es||r.cond===es)&&
+    (!q||(r.lote+' '+r.mat+' '+r.finca).toLowerCase().includes(q)));
+  f.sort((a,b)=>{
+    let A=a[sortKey],B=b[sortKey];
+    if(A==null)return 1; if(B==null)return -1;
+    return (typeof A==='number'? A-B : String(A).localeCompare(String(B),'es',{numeric:true}))*sortDir;
+  });
+  let h='<thead><tr>'+COLS.map(c=>`<th class="sortable" data-k="${c[0]}">${c[1]}${sortKey===c[0]?(sortDir>0?' ▲':' ▼'):''}</th>`).join('')+'</tr></thead><tbody>';
+  f.forEach(r=>{
+    const bc=r.ciclo==null?'#A9B2A9':band(r.ciclo).c;
+    h+=`<tr><td><b>${r.lote}</b></td><td class="num">${r.zona}</td><td>${r.finca}</td><td class="num">${n1(r.has)}</td>
+      <td class="num" style="color:${bc};font-weight:700">${r.ciclo==null?'—':r.ciclo}</td>
+      <td><span class="pill" style="background:${bc}">${r.banda}</span></td>
+      <td style="color:${CONDC[r.cond]};font-weight:600">${r.cond}</td>
+      <td class="num">${r.ultCorte?fShort(r.ultCorte):'—'}</td><td class="num">${r.edad??'—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${r.mat??'—'}</td><td class="num">${r.palmas?n0(r.palmas):'—'}</td></tr>`;
+  });
+  const sh=f.reduce((s,r)=>s+r.has,0);
+  h+=`</tbody><tfoot><tr><td>${f.length} lotes</td><td></td><td></td><td class="num">${n1(sh)}</td><td colspan="7"></td></tr></tfoot>`;
+  document.getElementById('lotTable').innerHTML=h;
+  document.getElementById('detNote').textContent=`${f.length} de ${rows.length} lotes · ${n1(sh)} has`;
+  document.querySelectorAll('#lotTable th').forEach(th=>th.onclick=()=>{
+    const k=th.dataset.k; if(sortKey===k)sortDir*=-1; else{sortKey=k;sortDir=(k==='ciclo'||k==='has')?-1:1;}
+    drawLots(snapshot(idx));
+  });
+  window._filtered=f;
+}
+const v=id=>document.getElementById(id).value;
+
+/* ---------- controls ---------- */
+function go(i){ idx=Math.max(0,Math.min(N-1,i)); render(); }
+document.getElementById('slider').oninput=e=>go(+e.target.value);
+document.getElementById('prev').onclick=()=>go(idx-1);
+document.getElementById('next').onclick=()=>go(idx+1);
+document.getElementById('toToday').onclick=()=>go(TODAY);
+document.getElementById('play').onclick=function(){
+  if(timer){clearInterval(timer);timer=null;this.textContent='▶ Animar';this.classList.remove('on');return;}
+  this.textContent='❚❚ Pausar'; this.classList.add('on');
+  if(idx>=N-1) idx=0;
+  timer=setInterval(()=>{ if(idx>=N-1){clearInterval(timer);timer=null;
+      const b=document.getElementById('play');b.textContent='▶ Animar';b.classList.remove('on');return;} go(idx+1); },260);
+};
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'&&e.target.type==='search')return;
+  if(e.key==='ArrowLeft')go(idx-1); if(e.key==='ArrowRight')go(idx+1);
+});
+document.getElementById('byZona').onclick=function(){aggMode='zona';tog(this,'byFinca');drawAgg(snapshot(idx));};
+document.getElementById('byFinca').onclick=function(){aggMode='finca';tog(this,'byZona');drawAgg(snapshot(idx));};
+function tog(on,offId){const off=document.getElementById(offId);
+  on.style.background='#3B6D11';on.style.color='#fff';on.style.borderColor='#3B6D11';
+  off.style.background='transparent';off.style.color='var(--muted)';off.style.borderColor='var(--line)';}
+
+/* filters */
+function fill(id,label,vals){
+  const s=document.getElementById(id);
+  s.innerHTML=`<option value="">${label}</option>`+vals.map(x=>`<option value="${x}">${x}</option>`).join('');
+  s.onchange=()=>drawLots(snapshot(idx));
+}
+fill('fZona','Todas las zonas',[...new Set(lots.map(l=>l.zona))].sort((a,b)=>a-b));
+fill('fFinca','Todas las fincas',[...new Set(lots.map(l=>l.finca))].sort((a,b)=>a.localeCompare(b,'es')));
+fill('fEstado','Todos los estados',[...BANDS.map(b=>b.k),'Recién cortado','Fuera de ciclo','Sin dato']);
+document.getElementById('fSearch').oninput=()=>drawLots(snapshot(idx));
+document.getElementById('clearF').onclick=()=>{
+  ['fZona','fFinca','fEstado'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('fSearch').value=''; drawLots(snapshot(idx));};
+document.getElementById('csv').onclick=()=>{
+  const hdr=['Lote','Zona','Finca','Has','Ciclo (d)','Estado ciclo','Condición','Último corte','Edad','Material','Casa comercial','Palmas','Propietario','Estado'];
+  const body=(window._filtered||[]).map(r=>[r.lote,r.zona,r.finca,r.has,r.ciclo??'',r.banda,r.cond,r.ultCorte??'',r.edad??'',r.mat??'',r.casa??'',r.palmas??'',r.prop??'',r.estado??'']);
+  const csv='\uFEFF'+[hdr,...body].map(x=>x.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='ciclos_cosecha_'+dates[idx]+'.csv'; a.click();
+};
+
+/* ticks + boot */
+document.getElementById('tk0').textContent=fShort(dates[0]);
+document.getElementById('tk1').textContent=fShort(dates[Math.floor(N/2)]);
+document.getElementById('tk2').textContent=fShort(dates[N-1])+' (hoy)';
+document.getElementById('slider').max=N-1;
+document.getElementById('objDias').textContent=OBJ;
+document.getElementById('objVent').textContent=VENT;
+render();
+</script>
+</body>
+</html>
