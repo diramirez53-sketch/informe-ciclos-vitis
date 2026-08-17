@@ -21,7 +21,7 @@ import sys
 import openpyxl
 
 AQUI = pathlib.Path(__file__).parent
-CARPETA_DATOS = AQUI / "datos"
+CARPETA_DATOS = AQUI
 PLANTILLA = AQUI / "plantilla.html"
 SALIDA = AQUI / "index.html"
 
