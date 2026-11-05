@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Guía de configuración · Tareas VO</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="app.css">
+<style>
+.doc{max-width:860px}
+.doc h2{font-size:28px;color:var(--green);margin:34px 0 8px}
+.doc h3{font-size:20px;margin:22px 0 6px}
+.doc p,.doc li{line-height:1.6}
+.doc ol,.doc ul{padding-left:22px}
+.doc li{margin-bottom:6px}
+.doc code,.doc .x{font-family:var(--f-mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;word-break:break-word}
+.doc pre{font-family:var(--f-mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.callout{border-left:4px solid var(--orange);background:var(--surface);border-radius:8px;padding:10px 14px;margin:14px 0}
+.callout.info{border-left-color:var(--green-2)}
+.map{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.map table{font-size:13.5px}
+.map td,.map th{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.map th{position:static;cursor:default}
+.copy{margin-left:6px;font-size:12px;padding:2px 8px}
+.step-n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--green);color:var(--on-accent);font-family:var(--f-display);font-weight:700;margin-right:8px;font-size:15px;vertical-align:2px}
+</style>
+</head>
+<body>
+<div class="wrap doc">
+  <div class="eyebrow">Tareas VO · Configuración única</div>
+  <h1 style="font-size:clamp(30px,5vw,42px);color:var(--green)">Guía de configuración</h1>
+  <p>Son cuatro pasos y se hacen una sola vez: subir el Excel a OneDrive, crear el flujo de Power Automate, publicar la app e instalarla en el celular. Toma unos 30 a 40 minutos, casi todo en el paso 2.</p>
+  <div class="callout"><b>Licencia:</b> el disparador “Cuando se recibe una solicitud HTTP” es <b>Premium</b> en Power Automate. Confirma con TI que tu cuenta tiene Power Automate Premium (o un plan por usuario o por flujo) antes de empezar.</div>
+  <p><a href="index.html">← Volver a la app</a></p>
+
+  <h2><span class="step-n">1</span>Subir el Excel a OneDrive</h2>
+  <ol>
+    <li>Sube <code>2026_Listado_de_Tareas_Gerencia_OneDrive.xlsx</code> a tu OneDrive empresarial, por ejemplo en <code>Documentos/Gerencia</code>. Puedes cambiarle el nombre.</li>
+    <li>No cambies los nombres de las tablas: <code>Tabla2</code> (hoja Seguimiento) y <code>Departamentos</code>, <code>Estados</code>, <code>Avances</code>, <code>Criticidad</code>, <code>Responsables</code> (hoja Categorias).</li>
+    <li>No cambies los encabezados de Tabla2 ni borres la columna <b>ID</b> (columna P, oculta). Con ella la app sabe qué fila actualizar.</li>
+    <li>Copia el enlace del archivo (Compartir → Copiar vínculo). Lo pegarás en la app como “Enlace del Excel”.</li>
+  </ol>
+  <div class="callout info">Puedes seguir editando el Excel a mano. Si agregas una fila directamente en el Excel, escribe cualquier código único en la columna ID (por ejemplo <code>x20</code>) para poder editarla también desde la app. Sin ID, la app la muestra pero no la deja modificar.</div>
+
+  <h2><span class="step-n">2</span>Crear el flujo en Power Automate</h2>
+  <p>En <b>make.powerautomate.com</b> → Crear → <b>Flujo de nube instantáneo</b> → elige el desencadenador <b>“Cuando se recibe una solicitud HTTP”</b>. Nómbralo <code>Tareas VO – Sincronizar Excel</code>.</p>
+
+  <h3>2.1 Desencadenador</h3>
+  <ul>
+    <li><b>Quién puede desencadenar el flujo:</b> <code>Cualquiera</code>. La app no inicia sesión en Microsoft, así que la seguridad está en la URL, que lleva una firma secreta (<code>sig=</code>). Trátala como una contraseña.</li>
+    <li><b>Método:</b> <code>POST</code>. Deja vacío el esquema JSON.</li>
+  </ul>
+
+  <h3>2.2 Acción “Redactar” → renómbrala <code>Datos</code></h3>
+  <p>Entrada (como expresión):</p>
+  <pre>json(triggerBody())</pre>
+
+  <h3>2.3 Control “Switch” (Cambiar)</h3>
+  <p>En “Activado” pon la expresión:</p>
+  <pre>outputs('Datos')?['accion']</pre>
+  <p>Crea tres casos: <code>listar</code>, <code>guardar</code> y <code>eliminar</code>.</p>
+
+  <h3>Caso <code>listar</code></h3>
+  <ol>
+    <li>Excel Online (Business) → <b>Enumerar las filas presentes en una tabla</b>. Ubicación: OneDrive for Business. Archivo: tu Excel. Tabla: <code>Tabla2</code>. En parámetros avanzados: <b>Formato de fecha y hora = ISO 8601</b>. En Configuración activa <b>Paginación</b> con límite 5000. Renómbrala <code>Listar tareas</code>.</li>
+    <li>Repite la misma acción cuatro veces más para <code>Departamentos</code>, <code>Estados</code>, <code>Criticidad</code> y <code>Responsables</code>. Renómbralas <code>Listar departamentos</code>, <code>Listar estados</code>, <code>Listar criticidad</code> y <code>Listar responsables</code>.</li>
+    <li><b>Respuesta</b> (Request → Respuesta): Código de estado <code>200</code>. Encabezados: <code>Content-Type</code> = <code>application/json</code> y <code>Access-Control-Allow-Origin</code> = <code>*</code>. En Cuerpo pega esta expresión:
+<pre>json(concat('{"tareas":', string(body('Listar_tareas')?['value']), ',"departamentos":', string(body('Listar_departamentos')?['value']), ',"estados":', string(body('Listar_estados')?['value']), ',"criticidades":', string(body('Listar_criticidad')?['value']), ',"responsables":', string(body('Listar_responsables')?['value']), '}'))</pre></li>
+  </ol>
+
+  <h3>Caso <code>guardar</code></h3>
+  <ol>
+    <li><b>Enumerar las filas presentes en una tabla</b> sobre <code>Tabla2</code>, renombrada <code>Buscar tarea</code>. En <b>Consulta de filtro</b> escribe <code>ID eq '</code>, inserta la expresión <code>outputs('Datos')?['tarea']?['ID']</code> y cierra con <code>'</code>.</li>
+    <li><b>Condición</b>: expresión <code>length(body('Buscar_tarea')?['value'])</code> · <i>es mayor que</i> · <code>0</code>.</li>
+    <li>Rama <b>Verdadero</b>: <b>Actualizar una fila</b> en <code>Tabla2</code>. Columna de clave <code>ID</code>, valor de clave <code>outputs('Datos')?['tarea']?['ID']</code>. Llena los campos con la tabla de abajo.</li>
+    <li>Rama <b>Falso</b>: <b>Agregar una fila a una tabla</b> en <code>Tabla2</code>, con los mismos campos.</li>
+    <li>Después de la condición: <b>Respuesta</b> con código <code>200</code>, el encabezado <code>Access-Control-Allow-Origin</code> = <code>*</code> y cuerpo <code>{"ok":true}</code>.</li>
+  </ol>
+  <div class="map"><table>
+    <thead><tr><th>Columna del Excel</th><th>Expresión</th></tr></thead>
+    <tbody>
+      <tr><td>No</td><td><code>outputs('Datos')?['tarea']?['No']</code></td></tr>
+      <tr><td>DEPARTAMENTO</td><td><code>outputs('Datos')?['tarea']?['Departamento']</code></td></tr>
+      <tr><td>TEMA</td><td><code>outputs('Datos')?['tarea']?['Tema']</code></td></tr>
+      <tr><td>FECHA PENDIENTE</td><td><code>outputs('Datos')?['tarea']?['FechaPendiente']</code></td></tr>
+      <tr><td>FECHA DE ENTREGA</td><td><code>outputs('Datos')?['tarea']?['FechaEntrega']</code></td></tr>
+      <tr><td>T. TRANSCURRIDO (días)</td><td><i>déjalo vacío: es una fórmula</i></td></tr>
+      <tr><td>FECHA DE REVISIÓN</td><td><code>outputs('Datos')?['tarea']?['FechaRevision']</code></td></tr>
+      <tr><td>ESTADO</td><td><code>outputs('Datos')?['tarea']?['Estado']</code></td></tr>
+      <tr><td>AVANCE</td><td><code>outputs('Datos')?['tarea']?['Avance']</code></td></tr>
+      <tr><td>CRITICIDAD</td><td><code>outputs('Datos')?['tarea']?['Criticidad']</code></td></tr>
+      <tr><td>RESPONSABLE</td><td><code>outputs('Datos')?['tarea']?['Responsable']</code></td></tr>
+      <tr><td>OBSERVACIONES</td><td><code>outputs('Datos')?['tarea']?['Observaciones']</code></td></tr>
+      <tr><td>ORIGEN</td><td><code>outputs('Datos')?['tarea']?['Origen']</code></td></tr>
+      <tr><td>ACTUALIZADO</td><td><code>outputs('Datos')?['tarea']?['Actualizado']</code></td></tr>
+      <tr><td>ID</td><td><code>outputs('Datos')?['tarea']?['ID']</code> <i>(solo en “Agregar una fila”)</i></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Caso <code>eliminar</code></h3>
+  <ol>
+    <li><b>Enumerar las filas presentes en una tabla</b> sobre <code>Tabla2</code>, renombrada <code>Buscar para eliminar</code>, con la consulta de filtro <code>ID eq '</code> + <code>outputs('Datos')?['id']</code> + <code>'</code>.</li>
+    <li><b>Condición</b>: <code>length(body('Buscar_para_eliminar')?['value'])</code> es mayor que <code>0</code>. En Verdadero: <b>Eliminar una fila</b>, con columna de clave <code>ID</code> y valor <code>outputs('Datos')?['id']</code>.</li>
+    <li><b>Respuesta</b> <code>200</code> con <code>Access-Control-Allow-Origin</code> = <code>*</code> y cuerpo <code>{"ok":true}</code>.</li>
+  </ol>
+
+  <h3>Caso predeterminado</h3>
+  <p><b>Respuesta</b> con código <code>400</code> y cuerpo <code>{"error":"acción desconocida"}</code>.</p>
+
+  <h3>2.4 Guardar y copiar la URL</h3>
+  <p>Guarda el flujo. Abre de nuevo el desencadenador y copia la <b>URL de HTTP POST</b>, que se genera al guardar.</p>
+  <div class="callout info"><b>Si “Probar conexión” falla con un error del paso Datos:</b> en algunos entornos el cuerpo llega en otro formato. Cambia la expresión de <code>Datos</code> por <code>json(base64ToString(triggerBody()?['$content']))</code> y prueba otra vez. En el historial de ejecuciones del flujo verás exactamente qué paso falló.</div>
+
+  <h2><span class="step-n">3</span>Publicar la app (Netlify Drop, gratis)</h2>
+  <ol>
+    <li>En el computador, descomprime <code>tareas-vo-app.zip</code>. Debe quedar una carpeta con <code>index.html</code>, <code>app.js</code>, <code>sw.js</code>, etc.</li>
+    <li>Entra a <b>app.netlify.com/drop</b> y arrastra la carpeta completa. En segundos te da una dirección <code>https://…netlify.app</code>.</li>
+    <li>Crea una cuenta gratuita (o inicia sesión) y <b>reclama el sitio</b>. Sin eso, Netlify lo protege con una contraseña temporal. Puedes cambiarle el nombre, por ejemplo <code>tareas-vitis-olei</code>.</li>
+    <li>Para actualizar la app más adelante: en el panel del sitio, arrastra la carpeta nueva en “Production deploys”.</li>
+  </ol>
+
+  <h2><span class="step-n">4</span>Instalar en el celular y conectar</h2>
+  <ol>
+    <li><b>Con internet</b>, abre la dirección del sitio. En Android usa Chrome → menú ⋮ → <b>Instalar app</b> o “Agregar a pantalla principal”. En iPhone usa Safari → Compartir → <b>Agregar a inicio</b>.</li>
+    <li>Abre la app desde el ícono, toca <b>Conexión</b>, pega la URL del flujo y el enlace del Excel, y pulsa <b>Probar conexión</b>. Debe decir cuántas filas tiene Tabla2. Luego pulsa <b>Guardar</b>: la app trae todas las tareas.</li>
+    <li>Desde ese momento puedes abrirla en modo avión. Todo lo que registres queda guardado en el teléfono con la etiqueta <b>SIN ENVIAR</b> y se envía solo al Excel cuando vuelve la señal, al abrir la app o cada 20 segundos mientras esté abierta.</li>
+    <li>Para dictar sin señal, usa el micrófono del teclado. En Gboard, descarga el idioma español para dictado sin conexión (Ajustes de Gboard → Escritura por voz → Reconocimiento de voz sin conexión). En iPhone, el dictado en español funciona sin red en modelos recientes.</li>
+  </ol>
+
+  <h2>Cómo se comporta</h2>
+  <ul>
+    <li><b>El Excel manda.</b> Al sincronizar, la app trae lo que haya en el Excel, incluidas las ediciones hechas a mano y las listas de la hoja Categorias. Encima conserva los cambios del teléfono que aún no se han enviado.</li>
+    <li>Si dos personas editan la misma tarea, queda la última que llegó al Excel.</li>
+    <li>Si un cambio falla cuatro veces por un error del flujo (no por falta de señal), la app lo aparta y muestra un aviso. Corrige el flujo y pulsa el botón de sincronizar para reenviarlo.</li>
+    <li>Cada celular o computador guarda su propia copia y su propia conexión. Configura la conexión una vez en cada uno.</li>
+  </ul>
+  <p style="margin-top:30px"><a href="index.html">← Volver a la app</a></p>
+</div>
+</body>
+</html>

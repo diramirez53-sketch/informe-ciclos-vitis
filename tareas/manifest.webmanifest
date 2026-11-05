@@ -1,0 +1,17 @@
+{
+  "name": "Tareas Gerencia Vitis Olei",
+  "short_name": "Tareas VO",
+  "description": "Listado de tareas de la Gerencia de campo y proveedores. Funciona sin conexión y sincroniza con Excel.",
+  "lang": "es-CO",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3f5ef",
+  "theme_color": "#3B6D11",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

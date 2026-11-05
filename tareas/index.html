@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tareas Gerencia Vitis Olei</title>
+<meta name="theme-color" content="#3B6D11">
+<meta name="description" content="Listado de tareas de la Gerencia de campo y proveedores – funciona sin conexión y sincroniza con Excel.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tareas VO">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Vitis Olei · Gerencia de campo y proveedores</div>
+      <h1>Listado de tareas <span>2026</span></h1>
+    </div>
+    <div class="top-actions">
+      <span class="sync off" id="sync" role="status" aria-live="polite">Cargando…</span>
+      <button class="btn icon" id="btnSync" type="button" aria-label="Sincronizar ahora" title="Sincronizar ahora">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8 8 0 00-14.9-3M4 4v4h4M4 13a8 8 0 0014.9 3M20 20v-4h-4"/></svg>
+      </button>
+      <button class="btn" id="btnExcel" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l8 8M16 8l-8 8"/></svg>
+        Abrir Excel
+      </button>
+      <button class="btn" id="btnCfg" type="button">Conexión</button>
+    </div>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="grid">
+    <aside class="side">
+      <section class="panel" aria-labelledby="hVoz">
+        <div class="voice-head">
+          <div>
+            <h2 id="hVoz">Tarea por nota de voz</h2>
+            <div class="status-line" id="vozStatus">Toca el micrófono y dicta</div>
+          </div>
+          <button class="mic" id="btnMic" type="button" aria-label="Grabar nota de voz">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>
+          </button>
+        </div>
+        <textarea id="dictado" placeholder="Ej.: Taller agrícola, revisar cotización de llantas para el tractor, urgente, para el viernes. Otra tarea: vivero, medir altura de plántulas el 15 de noviembre."></textarea>
+        <p class="hint" id="micHint" hidden></p>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="btnParse" type="button">Convertir en tareas</button>
+          <button class="btn ghost" id="btnClearVoz" type="button">Limpiar</button>
+        </div>
+        <div class="drafts" id="drafts"></div>
+      </section>
+
+      <section class="panel">
+        <details class="newtask" id="newDetails">
+          <summary><h2>Nueva tarea manual</h2></summary>
+          <form id="newForm" class="fgrid" autocomplete="off"></form>
+        </details>
+      </section>
+    </aside>
+
+    <main>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tabTareas" aria-selected="true" type="button">Seguimiento</button>
+        <button class="tab" role="tab" id="tabCats" aria-selected="false" type="button">Áreas y categorías</button>
+      </div>
+
+      <section id="viewTareas">
+        <div class="chips" id="depChips"></div>
+        <div class="filters">
+          <input class="in" id="fTexto" type="search" placeholder="Buscar tema u observación">
+          <select class="in" id="fEstado"></select>
+          <select class="in" id="fCrit"></select>
+          <select class="in" id="fResp"></select>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th data-sort="no">No</th><th data-sort="departamento">Departamento</th><th data-sort="tema">Tema</th>
+              <th data-sort="fechaPendiente">F. pendiente</th><th data-sort="dias">Días</th><th data-sort="fechaEntrega">F. entrega</th>
+              <th data-sort="estado">Estado</th><th data-sort="avance">Avance</th><th data-sort="criticidad">Criticidad</th><th data-sort="responsable">Responsable</th>
+            </tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="empty" hidden></div>
+      </section>
+
+      <section id="viewCats" hidden>
+        <p class="hint" style="margin:0 0 14px">Estas listas vienen de la hoja <b>Categorias</b> de tu Excel. Para agregar un departamento o un responsable, agrégalo en la tabla correspondiente del Excel; la app lo toma en la siguiente sincronización.</p>
+        <div class="cats" id="cats"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal-head"><h2 id="mTitle">Editar tarea</h2><button class="btn ghost" id="mClose" type="button" aria-label="Cerrar">✕</button></div>
+    <div id="mRo" class="ro" hidden>Esta fila se agregó directamente en el Excel sin ID: edítala allá o ponle un ID en la columna oculta “ID”.</div>
+    <form id="editForm" class="fgrid" autocomplete="off"></form>
+    <div class="modal-foot">
+      <div id="delZone"></div>
+      <div class="row"><button class="btn" id="mCancel" type="button">Cancelar</button><button class="btn primary" id="mSave" type="button">Guardar cambios</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="cfgOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cfgTitle">
+    <div class="modal-head"><h2 id="cfgTitle">Conexión con el Excel</h2><button class="btn ghost" id="cfgClose" type="button" aria-label="Cerrar">✕</button></div>
+    <ol class="cfg-steps">
+      <li>Crea el flujo de Power Automate siguiendo la <a href="guia.html" target="_blank" rel="noopener">guía de configuración</a>.</li>
+      <li>Copia la “URL de HTTP POST” del flujo y pégala aquí.</li>
+      <li>Pulsa “Probar conexión”. Haz esto una vez en cada celular o computador.</li>
+    </ol>
+    <div class="fgrid">
+      <label class="f full">URL del flujo (HTTP POST)<input class="in" id="cfgFlow" type="url" placeholder="https://…powerplatform.com/…/invoke?…&sig=…"></label>
+      <label class="f full">Enlace del Excel en OneDrive (opcional)<input class="in" id="cfgExcel" type="url" placeholder="https://…sharepoint.com/…/2026_Listado_de_Tareas_Gerencia.xlsx"></label>
+    </div>
+    <p id="cfgMsg" class="hint"></p>
+    <div class="modal-foot">
+      <button class="btn" id="cfgTest" type="button">Probar conexión</button>
+      <button class="btn primary" id="cfgSave" type="button">Guardar</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
